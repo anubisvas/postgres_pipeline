@@ -1,7 +1,7 @@
 import joblib
 import pandas as pd
 from sklearn.pipeline import Pipeline
-from sklearn.compose import ColumnTransformer, make_column_selector, make_column_transformer
+from sklearn.compose import make_column_selector, make_column_transformer
 from sklearn.impute import SimpleImputer
 
 from sklearn.model_selection import cross_val_score
@@ -80,13 +80,12 @@ def main():
     preprocessor_feat = Pipeline(steps=[
         ('drop_filter', FunctionTransformer(transform_columns)),
         ('preprocessor', preprocessor),
-        #('drop_function', FunctionTransformer(drop_untransformed_columns))
     ])
 
     models = (
         LogisticRegression(solver='liblinear'),
         RandomForestClassifier(),
-        SVC() # , hidden_layer_sizes=(100, 20)
+        SVC()
     )
     best_score = .0
     best_pipe = None
@@ -105,24 +104,6 @@ def main():
     print(f'best model: {type(best_pipe.named_steps["classifier"]).__name__}, accuracy: {best_score:.4f}')
     joblib.dump(best_pipe, 'vehicle_pipe.pkl')
 
-# def drop_untransformed_columns(df):
-   # columns_to_drop = [
-   #     'year',
-   #     'model',
-   #     'fuel',
-   #     'odometer',
-   #     'title_status',
-    #    'transmission',
-   #     'state',
-   #     'short_model',
-   #     'age_category'
-   # ]
-
-   # df.drop(columns_to_drop, axis=1)
-   # return df
-
-   #print(pipe.steps[0][1].named_steps['preprocessor'].transformers[1][1].named_steps['encoder'].get_feature_names_out())
-# Press the green button in the gutter to run the script.
 if __name__ == '__main__':
     main()
 
