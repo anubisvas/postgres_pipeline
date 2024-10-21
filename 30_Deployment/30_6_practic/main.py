@@ -1,6 +1,5 @@
 import joblib
 import pandas as pd
-from sklearn.neural_network import MLPClassifier
 from sklearn.pipeline import Pipeline
 from sklearn.compose import ColumnTransformer, make_column_selector, make_column_transformer
 from sklearn.impute import SimpleImputer
@@ -12,7 +11,6 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.svm import SVC
-#from statsmodels.tools import categorical
 
 
 def filter_data(df):
@@ -55,22 +53,6 @@ def feature_engine(df):
     df['age_category'] = df['year'].apply(lambda x: 'new' if x > 2013 else ('old' if x < 2006 else 'average'))
     return df
 
-# def drop_untransformed_columns(df):
-   # columns_to_drop = [
-   #     'year',
-   #     'model',
-   #     'fuel',
-   #     'odometer',
-   #     'title_status',
-    #    'transmission',
-   #     'state',
-   #     'short_model',
-   #     'age_category'
-   # ]
-
-   # df.drop(columns_to_drop, axis=1)
-   # return df
-
 def transform_columns(df):
     df = filter_data(df)
     df = year_filter(df)
@@ -79,10 +61,6 @@ def transform_columns(df):
 
 def main():
     df = pd.read_csv('data/homework.csv')
-    #preprocessor1 = Pipeline(steps=[
-     #   ('filter', FunctionTransformer)
-    #]) # поставим функцию удаления колонок тут
-
     X = df.drop('price_category', axis=1)
     y = df['price_category'].apply(lambda x: -1.0 if x == 'low' else 0 if x == 'medium' else 1)
 
@@ -95,21 +73,20 @@ def main():
         (Pipeline(steps=[
             ('imputer', SimpleImputer(strategy='most_frequent')),
             ('encoder', OneHotEncoder(handle_unknown='ignore'))
-        ]), make_column_selector(dtype_include='object')) # В категориальных фичах заменяем пропуски модой
-    )
+        ]), make_column_selector(dtype_include='object'))
+    ) # В категориальных фичах заменяем пропуски модой
+
 
     preprocessor_feat = Pipeline(steps=[
         ('drop_filter', FunctionTransformer(transform_columns)),
         ('preprocessor', preprocessor),
         #('drop_function', FunctionTransformer(drop_untransformed_columns))
     ])
-    #print(f'pipeline')  # Press Ctrl+F8 to toggle the breakpoint.
-    #df_filtered = filter_data(df).copy()
-    #print(df_filtered.columns)
+
     models = (
         LogisticRegression(solver='liblinear'),
         RandomForestClassifier(),
-        MLPClassifier(activation='logistic', max_iter=300) # , hidden_layer_sizes=(100, 20)
+        SVC() # , hidden_layer_sizes=(100, 20)
     )
     best_score = .0
     best_pipe = None
@@ -128,8 +105,23 @@ def main():
     print(f'best model: {type(best_pipe.named_steps["classifier"]).__name__}, accuracy: {best_score:.4f}')
     joblib.dump(best_pipe, 'vehicle_pipe.pkl')
 
+# def drop_untransformed_columns(df):
+   # columns_to_drop = [
+   #     'year',
+   #     'model',
+   #     'fuel',
+   #     'odometer',
+   #     'title_status',
+    #    'transmission',
+   #     'state',
+   #     'short_model',
+   #     'age_category'
+   # ]
 
+   # df.drop(columns_to_drop, axis=1)
+   # return df
 
+   #print(pipe.steps[0][1].named_steps['preprocessor'].transformers[1][1].named_steps['encoder'].get_feature_names_out())
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
     main()
